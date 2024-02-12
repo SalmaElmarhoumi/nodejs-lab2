@@ -1,25 +1,8 @@
-const getCarsButton = document.getElementById('getCars');
-const addCarButton = document.getElementById('addCar');
-const deleteCarButton = document.getElementById('deleteCar');
-const outputDiv = document.getElementById('output');
-
-getCarsButton.addEventListener('click', getCars);
-addCarButton.addEventListener('click', addCar);
-deleteCarButton.addEventListener('click', deleteCar);
-
-function getCars() {
-    fetch('/cars')
-        .then(response => response.json())
-        .then(cars => {
-            outputDiv.innerHTML = JSON.stringify(cars);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-}
-
 function addCar() {
-    const newCar = { model: 'Nissan Altima', licenseNumber: 'DEF456' };
+    const model = document.getElementById('model').value;
+    const licenseNumber = document.getElementById('licenseNumber').value;
+
+    const newCar = { model, licenseNumber };
 
     fetch('/cars', {
         method: 'POST',
@@ -29,22 +12,65 @@ function addCar() {
         body: JSON.stringify(newCar)
     })
     .then(response => response.json())
-    .then(car => {
-        outputDiv.innerHTML = `New car added: ${JSON.stringify(car)}`;
+    .then(data => {
+        window.location.href = 'index.html';
     })
     .catch(error => {
         console.error('Error:', error);
     });
 }
 
-function deleteCar() {
-    const carId = 1; 
+// Function to get all cars
+function getCars() {
+    fetch('/cars')
+        .then(response => response.json())
+        .then(cars => {
+            displayCars(cars);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
 
-    fetch(`/cars/${carId}`, {
+function displayCars(cars) {
+    const outputDiv = document.getElementById('output');
+    outputDiv.innerHTML = ''; 
+
+    const ul = document.createElement('ul');
+    cars.forEach(car => {
+        const li = document.createElement('li');
+        li.textContent = `Model: ${car.model}, License Number: ${car.licenseNumber}`;
+
+        li.setAttribute('id', `car-${car.id}`);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        
+        deleteButton.addEventListener('click', () => {
+            deleteCar(car.id); 
+        });
+
+        li.appendChild(deleteButton);
+
+        ul.appendChild(li);
+    });
+
+    outputDiv.appendChild(ul);
+}
+
+function deleteCar(id) {
+    fetch(`/cars/${id}`, {
         method: 'DELETE'
     })
-    .then(() => {
-        outputDiv.innerHTML = 'Car deleted successfully';
+    .then(response => {
+        if (response.ok) {
+            const deletedCarElement = document.getElementById(`car-${id}`);
+            if (deletedCarElement) {
+                deletedCarElement.remove();
+            }
+        } else {
+            console.error('Error:', response.statusText);
+        }
     })
     .catch(error => {
         console.error('Error:', error);

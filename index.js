@@ -1,13 +1,10 @@
-
-
 const express = require('express');
+const bodyParser = require('body-parser');
+
 const app = express();
 const port = 3000;
 
-// Serve static files from the "public" folder
-app.use(express.static('public'));
-
-app.use(express.json());
+app.use(bodyParser.json());
 
 let cars = [
     { id: 1, model: 'Toyota Camry', licenseNumber: 'ABC123' },
@@ -41,11 +38,6 @@ app.delete('/cars/:id', (req, res) => {
     const carId = parseInt(req.params.id);
     cars = cars.filter(car => car.id !== carId);
     res.sendStatus(204);
-});
-
-// Define a route handler for the root path ("/")
-app.get('/', (req, res) => {
-    res.send('Server is running');
 });
 
 // Start the server
